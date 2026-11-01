@@ -1,0 +1,21 @@
+<resources>
+    <string name="app_name">LoL SkinScope</string>
+
+    <string name="champions_title">Campeones</string>
+    <string name="champions_subtitle">Parche %1$s · %2$d campeones</string>
+    <string name="champions_not_synced">Catálogo sin sincronizar</string>
+    <string name="champions_search_hint">Buscar campeón</string>
+    <string name="champions_loading">Sincronizando catálogo…</string>
+    <string name="champions_empty">No hay campeones todavía. Pulsa actualizar para sincronizar.</string>
+    <string name="champions_no_results">Sin resultados para «%1$s»</string>
+
+    <string name="champion_detail_title">Campeón</string>
+    <string name="champion_not_found">Campeón no encontrado</string>
+    <string name="champion_skins_count">Skins (%1$d)</string>
+    <string name="skin_legacy">Legado</string>
+
+    <string name="action_refresh">Actualizar</string>
+    <string name="action_retry">Reintentar</string>
+    <string name="action_back">Volver</string>
+    <string name="action_clear_search">Borrar búsqueda</string>
+</resources>
