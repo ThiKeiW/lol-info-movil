@@ -3,6 +3,7 @@ package com.thikeiw.lolinfo.ui.champions
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.thikeiw.lolinfo.data.CatalogRepository
+import com.thikeiw.lolinfo.data.local.CatalogLocales
 import com.thikeiw.lolinfo.domain.model.Champion
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
@@ -11,6 +12,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
@@ -66,6 +68,25 @@ class ChampionsViewModel @Inject constructor(private val repository: CatalogRepo
 
   init {
     refresh(force = false)
+  }
+
+  /** Idioma actual del catálogo para el selector de la top bar. */
+  val locale: StateFlow<String> =
+    repository
+      .observeLocale()
+      .stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5_000),
+        initialValue = CatalogLocales.ES_MX,
+      )
+
+  /** Cambia el idioma del catálogo (la UI se aplica en ChampionsScreen con recreación). */
+  suspend fun tryChangeLocale(newLocale: String): Boolean {
+    val current = repository.observeLocale().first()
+    if (current == newLocale) return false
+    repository.setLocale(newLocale)
+    repository.refresh(force = true)
+    return true
   }
 
   fun onQueryChange(value: String) {

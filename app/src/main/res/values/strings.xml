@@ -13,9 +13,35 @@
     <string name="champion_not_found">Campeón no encontrado</string>
     <string name="champion_skins_count">Skins (%1$d)</string>
     <string name="skin_legacy">Legado</string>
+    <string name="tag_fighter">Luchador</string>
+    <string name="tag_tank">Tanque</string>
+    <string name="tag_mage">Mago</string>
+    <string name="tag_marksman">Tirador</string>
+    <string name="tag_assassin">Asesino</string>
+    <string name="tag_support">Soporte</string>
+    <string name="skin_rarity_legendary">Legendaria</string>
+    <string name="skin_rarity_mythic">Mítica</string>
+    <string name="skin_rarity_epic">Épica</string>
+    <string name="skin_rarity_rare">Rara</string>
+    <string name="skin_rarity_transcendent">Trascendente</string>
+    <string name="skin_rarity_ultimate">Definitiva</string>
+    <string name="skin_rarity_exalted">Exaltada</string>
+    <string name="skin_rarity_other">Especial</string>
+    <string name="language_picker">Idioma</string>
+    <string name="language_es_mx">Español (MX)</string>
+    <string name="language_es_mx_on">✓ Español (MX)</string>
+    <string name="language_en_na">English (NA)</string>
+    <string name="language_en_na_on">✓ English (NA)</string>
+    <string name="skin_price_rp">%1$d RP</string>
+    <string name="skin_price_me">%1$d EM</string>
+    <string name="skin_watch_video">Ver video (SkinSpotlights)</string>
+    <string name="skin_video_channel">Video por SkinSpotlights en YouTube</string>
+    <string name="skin_video_open_youtube">Abrir en YouTube</string>
+    <string name="skin_video_not_found">No se encontró un video para este skin. Revisa tu conexión e inténtalo de nuevo.</string>
 
     <string name="action_refresh">Actualizar</string>
     <string name="action_retry">Reintentar</string>
     <string name="action_back">Volver</string>
+    <string name="action_close">Cerrar</string>
     <string name="action_clear_search">Borrar búsqueda</string>
 </resources>

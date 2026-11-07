@@ -14,19 +14,26 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
 
 data class ChampionDetailUiState(
   val champion: Champion? = null,
   val skins: List<Skin> = emptyList(),
+  /** Splash de la skin base (no se lista): se usa como banner del campeón. */
+  val baseSplashUrl: String? = null,
   val isLoading: Boolean = true,
   val isNotFound: Boolean = false,
 )
 
 @OptIn(ExperimentalCoroutinesApi::class)
 @HiltViewModel
-class ChampionDetailViewModel @Inject constructor(private val repository: CatalogRepository) :
-  ViewModel() {
+class ChampionDetailViewModel
+@Inject
+constructor(
+  private val repository: CatalogRepository,
+) : ViewModel() {
 
   private val championId = MutableStateFlow<String?>(null)
 
@@ -34,22 +41,38 @@ class ChampionDetailViewModel @Inject constructor(private val repository: Catalo
     championId
       .filterNotNull()
       .flatMapLatest { id ->
-        combine(repository.observeChampion(id), repository.observeSkins(id)) {
-          champion,
-          skins ->
-          ChampionDetailUiState(
-            champion = champion,
-            skins = skins,
-            isLoading = false,
-            isNotFound = champion == null,
-          )
-        }
+        repository
+          .observeChampion(id)
+          .onEach { champion -> if (champion != null && champion.lore.isBlank()) fetchLore(champion.id) }
+          .combine(repository.observeSkins(id)) { champion, allSkins ->
+            ChampionDetailUiState(
+              champion = champion,
+              // La skin base (num 0) no se lista; su splash sirve de banner.
+              skins = allSkins.filterNot { it.isBase },
+              baseSplashUrl = allSkins.firstOrNull { it.isBase }?.splashUrl,
+              isLoading = false,
+              isNotFound = champion == null,
+            )
+          }
       }
       .stateIn(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5_000),
         initialValue = ChampionDetailUiState(),
       )
+
+  private val loreFetches = mutableSetOf<String>()
+
+  private fun fetchLore(id: String) {
+    if (!loreFetches.add(id)) return
+    viewModelScope.launch { repository.fetchChampionLore(id) }
+  }
+
+  /** Nombre en inglés del skin para la búsqueda de video (canal SkinSpotlights en inglés). */
+  suspend fun englishSkinNameForVideo(championId: String, skinNum: Int): String? =
+    runCatching { repository.englishSkinName(championId, skinNum) }.getOrNull()
+
+  /** Resuelve el video del skin: embed de YouTube si hay resultado, o la búsqueda del canal. */
 
   fun load(id: String) {
     if (championId.value != id) championId.value = id

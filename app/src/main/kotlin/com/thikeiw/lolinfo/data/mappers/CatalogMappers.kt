@@ -2,6 +2,7 @@ package com.thikeiw.lolinfo.data.mappers
 
 import com.thikeiw.lolinfo.data.local.ChampionEntity
 import com.thikeiw.lolinfo.data.local.SkinEntity
+import com.thikeiw.lolinfo.data.local.SkinPrice
 import com.thikeiw.lolinfo.data.remote.dto.CdragonSkinDto
 import com.thikeiw.lolinfo.data.remote.dto.ChampionSummaryDto
 import com.thikeiw.lolinfo.domain.model.Champion
@@ -20,15 +21,20 @@ fun loadingUrl(championId: String, num: Int): String = "$DDRAGON_CDN/img/champio
 fun championImageUrl(version: String, championId: String): String =
   "$DDRAGON_CDN/$version/img/champion/$championId.png"
 
+/**
+ * Los tags y raridades de Data Dragon/CommunityDragon siempre llegan en inglés; se guardan como
+ * código crudo en Room y la UI los localiza con recursos (tag_fighter, skin_rarity_*), así cambian
+ * con el idioma de la app. Códigos desconocidos (kNoRarity) no se muestran.
+ */
 fun rarityLabel(rarity: String): String? =
   when (rarity) {
-    "kLegendary" -> "Legendaria"
-    "kMythic" -> "Mítica"
-    "kEpic" -> "Épica"
-    "kRare" -> "Rara"
-    "kTranscendent" -> "Trascendente"
-    "kUltimate" -> "Definitiva"
-    "kExalted" -> "Exaltada"
+    "kLegendary",
+    "kMythic",
+    "kEpic",
+    "kRare",
+    "kTranscendent",
+    "kUltimate",
+    "kExalted" -> rarity
     else -> null
   }
 
@@ -39,6 +45,7 @@ fun ChampionSummaryDto.toEntity(version: String): ChampionEntity =
     name = name,
     title = title,
     blurb = blurb,
+    lore = "",
     tags = tags,
     partype = partype,
     attack = info.attack,
@@ -56,6 +63,7 @@ fun ChampionEntity.toDomain(): Champion =
     name = name,
     title = title,
     blurb = blurb,
+    lore = lore,
     tags = tags,
     partype = partype,
     attack = attack,
@@ -76,6 +84,8 @@ fun SkinEntity.toDomain(): Skin =
     skinLines = skinLines,
     splashUrl = splashUrl,
     loadingUrl = loadingUrl,
+    priceRp = priceRp,
+    priceMe = priceMe,
   )
 
 /**
@@ -86,6 +96,7 @@ fun buildSkinEntities(
   champions: List<ChampionEntity>,
   cdragonSkins: Map<String, CdragonSkinDto>,
   skinLineNames: Map<Int, String>,
+  prices: Map<Int, SkinPrice> = emptyMap(),
 ): List<SkinEntity> {
   val championsByKey = champions.associateBy { it.key }
 
@@ -113,6 +124,8 @@ fun buildSkinEntities(
             .distinct(),
         splashUrl = splashUrl(champion.id, num),
         loadingUrl = loadingUrl(champion.id, num),
+        priceRp = if (num == 0) null else prices[dto.id]?.rp,
+        priceMe = if (num == 0) null else prices[dto.id]?.me,
       )
     }
     .distinctBy { it.id }

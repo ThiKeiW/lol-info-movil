@@ -1,6 +1,7 @@
 package com.thikeiw.lolinfo.data.mappers
 
 import com.thikeiw.lolinfo.data.local.ChampionEntity
+import com.thikeiw.lolinfo.data.local.SkinPrice
 import com.thikeiw.lolinfo.data.remote.dto.CdragonSkinDto
 import com.thikeiw.lolinfo.data.remote.dto.CdragonSkinLineRef
 import org.junit.Assert.assertEquals
@@ -49,16 +50,50 @@ class CatalogMappersTest {
   }
 
   @Test
-  fun `maps community dragon rarities to spanish labels`() {
-    assertEquals("Legendaria", rarityLabel("kLegendary"))
-    assertEquals("Mítica", rarityLabel("kMythic"))
-    assertEquals("Épica", rarityLabel("kEpic"))
+  fun `keeps rarity codes raw for the ui to localize`() {
+    assertEquals("kLegendary", rarityLabel("kLegendary"))
+    assertEquals("kMythic", rarityLabel("kMythic"))
+    assertEquals("kEpic", rarityLabel("kEpic"))
     assertNull(rarityLabel("kNoRarity"))
     assertNull(rarityLabel(""))
   }
 
   @Test
-  fun `builds base skin with localized champion name`() {
+  fun `keeps champion tags raw for the ui to localize`() {
+    val champion =
+      aatrox.copy(tags = listOf("Fighter", "Tank", "Support", "Desconocido")).toDomain()
+
+    assertEquals(listOf("Fighter", "Tank", "Support", "Desconocido"), champion.tags)
+  }
+
+  @Test
+  fun `attaches rp and mythic essence prices to skins`() {
+    val skins =
+      buildSkinEntities(
+        champions = listOf(aatrox),
+        cdragonSkins =
+          mapOf(
+            "266000" to skin(266000, "Aatrox", "kNoRarity"),
+            "266001" to skin(266001, "Aatrox Justiciero", "kEpic"),
+            "266002" to skin(266002, "Aatrox Mítico", "kMythic"),
+          ),
+        skinLineNames = emptyMap(),
+        prices =
+          mapOf(
+            266000 to SkinPrice(rp = 880),
+            266001 to SkinPrice(rp = 1350),
+            266002 to SkinPrice(me = 125),
+          ),
+      )
+
+    val byId = skins.associateBy { it.id }
+    assertNull(byId.getValue(266000).priceRp)
+    assertEquals(1350, byId.getValue(266001).priceRp)
+    assertEquals(125, byId.getValue(266002).priceMe)
+  }
+
+  @Test
+  fun `builds base skin with champion name`() {
     val skins =
       buildSkinEntities(
         champions = listOf(aatrox),
@@ -84,7 +119,7 @@ class CatalogMappersTest {
 
     val result = skins.single()
     assertEquals("Aatrox Justiciero", result.name)
-    assertEquals("Épica", result.rarity)
+    assertEquals("kEpic", result.rarity)
     assertEquals(listOf("Justicieros"), result.skinLines)
   }
 

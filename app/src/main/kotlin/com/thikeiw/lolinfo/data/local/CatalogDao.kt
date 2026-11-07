@@ -14,6 +14,12 @@ abstract class CatalogDao {
   @Query("SELECT * FROM champions WHERE id = :id")
   abstract fun observeChampion(id: String): Flow<ChampionEntity?>
 
+  @Query("SELECT * FROM champions WHERE id = :id")
+  abstract suspend fun getChampion(id: String): ChampionEntity?
+
+  @Query("UPDATE champions SET lore = :lore WHERE id = :id")
+  abstract suspend fun updateLore(id: String, lore: String)
+
   @Query("SELECT * FROM skins WHERE championId = :id ORDER BY num")
   abstract fun observeSkins(id: String): Flow<List<SkinEntity>>
 

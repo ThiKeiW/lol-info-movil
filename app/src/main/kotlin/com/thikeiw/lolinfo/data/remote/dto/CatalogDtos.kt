@@ -26,6 +26,19 @@ data class ChampionInfoDto(
 )
 
 @Serializable
+data class ChampionDetailResponse(val data: Map<String, ChampionDetailDto> = emptyMap())
+
+@Serializable
+data class ChampionDetailDto(
+  val id: String,
+  val lore: String = "",
+  val skins: List<ChampionSkinDto> = emptyList(),
+)
+
+@Serializable
+data class ChampionSkinDto(val num: Int, val name: String)
+
+@Serializable
 data class CdragonSkinDto(
   val id: Int,
   val name: String = "",

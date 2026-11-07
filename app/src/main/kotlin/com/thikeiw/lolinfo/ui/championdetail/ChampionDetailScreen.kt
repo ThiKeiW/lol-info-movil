@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -14,6 +15,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -27,6 +29,9 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
@@ -40,6 +45,7 @@ import coil3.compose.AsyncImage
 import com.thikeiw.lolinfo.R
 import com.thikeiw.lolinfo.domain.model.Champion
 import com.thikeiw.lolinfo.domain.model.Skin
+import com.thikeiw.lolinfo.ui.skinvideo.SkinVideoOverlay
 import com.thikeiw.lolinfo.ui.theme.LoLSkinScopeTheme
 
 @Composable
@@ -51,7 +57,7 @@ fun ChampionDetailScreen(
   LaunchedEffect(championId) { viewModel.load(championId) }
   val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
-  ChampionDetailContent(uiState = uiState, onBack = onBack)
+  ChampionDetailContent(uiState = uiState, onBack = onBack, viewModel = viewModel)
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -59,8 +65,17 @@ fun ChampionDetailScreen(
 internal fun ChampionDetailContent(
   uiState: ChampionDetailUiState,
   onBack: () -> Unit,
+  viewModel: ChampionDetailViewModel? = null,
 ) {
-  Scaffold(
+  // Estado del modal de video sobrevive a rotaciones (recordando id y nombres, no el objeto).
+  var activeVideoSkinId by rememberSaveable { mutableStateOf<Int?>(null) }
+  var activeVideoSkinNum by rememberSaveable { mutableStateOf(0) }
+  var activeVideoSkinName by rememberSaveable { mutableStateOf("") }
+  var activeVideoChampionName by rememberSaveable { mutableStateOf("") }
+  var activeVideoChampionId by rememberSaveable { mutableStateOf("") }
+
+  Box(modifier = Modifier.fillMaxSize()) {
+    Scaffold(
     topBar = {
       TopAppBar(
         title = { Text(uiState.champion?.name ?: stringResource(R.string.champion_detail_title)) },
@@ -94,22 +109,50 @@ internal fun ChampionDetailContent(
         ChampionDetailList(
           champion = uiState.champion,
           skins = uiState.skins,
+          baseSplashUrl = uiState.baseSplashUrl,
+          onPlayVideo = { skin ->
+            activeVideoSkinId = skin.id
+            activeVideoSkinNum = skin.num
+            activeVideoSkinName = skin.name
+            activeVideoChampionName = uiState.champion?.name ?: ""
+            activeVideoChampionId = skin.championId
+          },
           modifier = Modifier.padding(innerPadding),
         )
+    }
+    }
+
+    if (activeVideoSkinId != null) {
+      SkinVideoOverlay(
+        championName = activeVideoChampionName,
+        skinName = activeVideoSkinName,
+        championId = activeVideoChampionId,
+        skinNum = activeVideoSkinNum,
+        englishSkinNameResolver = {
+          viewModel?.englishSkinNameForVideo(activeVideoChampionId, activeVideoSkinNum)
+        },
+        onDismiss = { activeVideoSkinId = null },
+      )
     }
   }
 }
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-private fun ChampionDetailList(champion: Champion, skins: List<Skin>, modifier: Modifier = Modifier) {
+private fun ChampionDetailList(
+  champion: Champion,
+  skins: List<Skin>,
+  baseSplashUrl: String?,
+  onPlayVideo: (Skin) -> Unit,
+  modifier: Modifier = Modifier,
+) {
   LazyColumn(
     modifier = modifier.fillMaxSize(),
     contentPadding = PaddingValues(bottom = 24.dp),
   ) {
     item {
       AsyncImage(
-        model = skins.firstOrNull { it.isBase }?.splashUrl,
+        model = baseSplashUrl,
         contentDescription = champion.name,
         contentScale = ContentScale.Crop,
         modifier = Modifier.fillMaxWidth().aspectRatio(16f / 9f),
@@ -128,12 +171,13 @@ private fun ChampionDetailList(champion: Champion, skins: List<Skin>, modifier: 
             horizontalArrangement = Arrangement.spacedBy(8.dp),
             modifier = Modifier.padding(top = 8.dp),
           ) {
-            champion.tags.forEach { tag -> SuggestionChip(onClick = {}, label = { Text(tag) }) }
+            champion.tags.forEach { tag -> SuggestionChip(onClick = {}, label = { Text(localizedTag(tag)) }) }
           }
         }
-        if (champion.blurb.isNotBlank()) {
+        val lore = champion.lore.ifBlank { champion.blurb }
+        if (lore.isNotBlank()) {
           Text(
-            text = champion.blurb,
+            text = lore,
             style = MaterialTheme.typography.bodyMedium,
             modifier = Modifier.padding(top = 12.dp),
           )
@@ -146,13 +190,22 @@ private fun ChampionDetailList(champion: Champion, skins: List<Skin>, modifier: 
         )
       }
     }
-    items(skins, key = { it.id }) { skin -> SkinCard(skin = skin) }
+    items(skins, key = { it.id }) { skin ->
+      SkinCard(skin = skin, onPlay = { onPlayVideo(skin) })
+    }
   }
 }
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-private fun SkinCard(skin: Skin) {
+private fun SkinCard(skin: Skin, onPlay: () -> Unit) {
+  val priceLabel =
+    when {
+      skin.priceMe != null -> stringResource(R.string.skin_price_me, skin.priceMe)
+      skin.priceRp != null -> stringResource(R.string.skin_price_rp, skin.priceRp)
+      else -> null
+    }
+
   Card(modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 6.dp)) {
     Column {
       AsyncImage(
@@ -162,14 +215,35 @@ private fun SkinCard(skin: Skin) {
         modifier = Modifier.fillMaxWidth().aspectRatio(16f / 9f),
       )
       Column(modifier = Modifier.padding(12.dp)) {
-        Text(text = skin.name, style = MaterialTheme.typography.titleSmall)
-        if (skin.rarity != null || skin.isLegacy || skin.skinLines.isNotEmpty()) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+          Text(
+            text = skin.name,
+            style = MaterialTheme.typography.titleSmall,
+            modifier = Modifier.weight(1f),
+          )
+          IconButton(onClick = onPlay) {
+            Icon(
+              imageVector = Icons.Filled.PlayArrow,
+              contentDescription = stringResource(R.string.skin_watch_video),
+              tint = MaterialTheme.colorScheme.primary,
+            )
+          }
+        }
+        if (
+          skin.rarity != null ||
+            skin.isLegacy ||
+            skin.skinLines.isNotEmpty() ||
+            priceLabel != null
+        ) {
           FlowRow(
             horizontalArrangement = Arrangement.spacedBy(8.dp),
             modifier = Modifier.padding(top = 6.dp),
           ) {
             skin.rarity?.let { rarity ->
-              SuggestionChip(onClick = {}, label = { Text(rarity) })
+              SuggestionChip(onClick = {}, label = { Text(localizedRarity(rarity)) })
+            }
+            priceLabel?.let { price ->
+              SuggestionChip(onClick = {}, label = { Text(price) })
             }
             if (skin.isLegacy) {
               SuggestionChip(onClick = {}, label = { Text(stringResource(R.string.skin_legacy)) })
@@ -224,7 +298,7 @@ private fun ChampionDetailContentPreview() {
                 championId = "Ahri",
                 num = 1,
                 name = "Ahri Dinastía",
-                rarity = "Épica",
+                rarity = "kEpic",
                 isLegacy = false,
                 skinLines = listOf("Dinastía"),
                 splashUrl = "",
@@ -237,3 +311,34 @@ private fun ChampionDetailContentPreview() {
     )
   }
 }
+
+/** Tags de Data Dragon (siempre en inglés) localizados con recursos de la app. */
+private val TAG_LABELS: Map<String, Int> =
+  mapOf(
+    "Fighter" to R.string.tag_fighter,
+    "Tank" to R.string.tag_tank,
+    "Mage" to R.string.tag_mage,
+    "Marksman" to R.string.tag_marksman,
+    "Assassin" to R.string.tag_assassin,
+    "Support" to R.string.tag_support,
+  )
+
+@Composable
+private fun localizedTag(tag: String): String =
+  TAG_LABELS[tag]?.let { stringResource(it) } ?: tag
+
+/** Raridades de CommunityDragon (códigos k*) localizados con recursos de la app. */
+@Composable
+private fun localizedRarity(rarity: String): String =
+  stringResource(
+    when (rarity) {
+      "kLegendary" -> R.string.skin_rarity_legendary
+      "kMythic" -> R.string.skin_rarity_mythic
+      "kEpic" -> R.string.skin_rarity_epic
+      "kRare" -> R.string.skin_rarity_rare
+      "kTranscendent" -> R.string.skin_rarity_transcendent
+      "kUltimate" -> R.string.skin_rarity_ultimate
+      "kExalted" -> R.string.skin_rarity_exalted
+      else -> R.string.skin_rarity_other
+    },
+  )

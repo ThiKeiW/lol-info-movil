@@ -6,6 +6,7 @@ data class Champion(
   val name: String,
   val title: String,
   val blurb: String,
+  val lore: String = "",
   val tags: List<String>,
   val partype: String,
   val attack: Int,
@@ -25,6 +26,8 @@ data class Skin(
   val skinLines: List<String>,
   val splashUrl: String,
   val loadingUrl: String,
+  val priceRp: Int? = null,
+  val priceMe: Int? = null,
 ) {
   val isBase: Boolean get() = num == 0
 }

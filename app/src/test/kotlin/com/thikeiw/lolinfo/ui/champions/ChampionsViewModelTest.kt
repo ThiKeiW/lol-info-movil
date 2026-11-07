@@ -1,4 +1,4 @@
-package com.thikeiw.lolinfo.ui.champions
+﻿package com.thikeiw.lolinfo.ui.champions
 
 import com.thikeiw.lolinfo.data.CatalogRepository
 import com.thikeiw.lolinfo.domain.model.Champion
@@ -105,7 +105,15 @@ private class FakeCatalogRepository : CatalogRepository {
 
   override fun observeCatalogVersion(): Flow<String?> = flowOf("16.21.1")
 
+  override fun observeLocale(): Flow<String> = flowOf("es_mx")
+
+  override suspend fun setLocale(locale: String) {}
+
+  override suspend fun englishSkinName(championId: String, skinNum: Int): String? = null
+
   override suspend fun refresh(force: Boolean): Result<Unit> = refreshResult
+
+  override suspend fun fetchChampionLore(championId: String): Result<String> = Result.success("")
 }
 
 private val FAKE_CHAMPIONS =
@@ -117,7 +125,7 @@ private val FAKE_CHAMPIONS =
       title = "la Zorra de Nueve Colas",
       blurb = "",
       tags = listOf("Maga"),
-      partype = "Maná",
+      partype = "ManÃ¡",
       attack = 3,
       defense = 4,
       magic = 8,

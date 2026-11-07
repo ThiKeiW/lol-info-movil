@@ -18,7 +18,9 @@ object DatabaseModule {
   @Provides
   @Singleton
   fun provideCatalogDatabase(@ApplicationContext context: Context): CatalogDatabase =
-    Room.databaseBuilder(context, CatalogDatabase::class.java, "lolskin.db").build()
+    Room.databaseBuilder(context, CatalogDatabase::class.java, "lolskin.db")
+      .fallbackToDestructiveMigration(true)
+      .build()
 
   @Provides
   @Singleton fun provideCatalogDao(database: CatalogDatabase): CatalogDao = database.catalogDao()
