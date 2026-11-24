@@ -26,16 +26,44 @@ abstract class CatalogDao {
   @Query("SELECT * FROM skins")
   abstract fun observeAllSkins(): Flow<List<SkinEntity>>
 
-  @Query("SELECT * FROM skin_flags")
-  abstract fun observeSkinFlags(): Flow<List<SkinFlagEntity>>
+  @Query("SELECT * FROM skin_flags WHERE uid = :uid")
+  abstract fun observeSkinFlags(uid: String): Flow<List<SkinFlagEntity>>
 
-  @Query("SELECT * FROM skin_flags WHERE skinId = :skinId")
-  abstract suspend fun getSkinFlag(skinId: Int): SkinFlagEntity?
+  @Query("SELECT * FROM skin_flags WHERE uid = :uid")
+  abstract suspend fun getSkinFlags(uid: String): List<SkinFlagEntity>
+
+  @Query("SELECT * FROM skin_flags WHERE uid = :uid AND skinId = :skinId")
+  abstract suspend fun getSkinFlag(uid: String, skinId: Int): SkinFlagEntity?
+
+  @Query("SELECT * FROM skin_flags WHERE uid = :uid AND pendingSync = 1")
+  abstract suspend fun getPendingSkinFlags(uid: String): List<SkinFlagEntity>
 
   @Upsert abstract suspend fun upsertSkinFlag(flag: SkinFlagEntity)
 
-  @Query("DELETE FROM skin_flags WHERE skinId = :skinId")
-  abstract suspend fun deleteSkinFlag(skinId: Int)
+  @Upsert abstract suspend fun upsertSkinFlags(flags: List<SkinFlagEntity>)
+
+  @Query("UPDATE skin_flags SET pendingSync = 0 WHERE uid = :uid AND skinId = :skinId AND revision = :revision")
+  abstract suspend fun markSkinFlagSynced(uid: String, skinId: Int, revision: Long)
+
+  @Query("DELETE FROM skin_flags WHERE uid = :uid AND skinId = :skinId")
+  abstract suspend fun deleteSkinFlag(uid: String, skinId: Int)
+
+  @Query(
+    "INSERT OR IGNORE INTO skin_flags (uid, skinId, isFavorite, isOwned, revision, updatedBy, pendingSync) " +
+      "SELECT :uid, skinId, isFavorite, isOwned, revision, updatedBy, 1 FROM skin_flags WHERE uid = 'legacy'"
+  )
+  abstract suspend fun claimLegacyInto(uid: String)
+
+  @Query("DELETE FROM skin_flags WHERE uid = 'legacy'")
+  abstract suspend fun deleteLegacyFlags()
+
+  /** Reasigna las marcas locales (fase 2 / sin sesión) a la cuenta actual una sola vez. */
+  @Transaction
+  open suspend fun claimLegacyFlags(uid: String) {
+    if (uid == LEGACY_UID) return
+    claimLegacyInto(uid)
+    deleteLegacyFlags()
+  }
 
   @Query("SELECT COUNT(*) FROM champions") abstract suspend fun countChampions(): Int
 

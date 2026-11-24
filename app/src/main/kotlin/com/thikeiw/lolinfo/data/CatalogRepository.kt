@@ -1,8 +1,11 @@
 package com.thikeiw.lolinfo.data
 
+import com.thikeiw.lolinfo.data.auth.AuthRepository
 import com.thikeiw.lolinfo.data.local.CatalogDao
 import com.thikeiw.lolinfo.data.local.CatalogLocales
 import com.thikeiw.lolinfo.data.local.CatalogPreferences
+import com.thikeiw.lolinfo.data.local.DeviceIdProvider
+import com.thikeiw.lolinfo.data.local.LEGACY_UID
 import com.thikeiw.lolinfo.data.local.SkinFlagEntity
 import com.thikeiw.lolinfo.data.local.SkinPriceCatalog
 import com.thikeiw.lolinfo.data.mappers.buildSkinEntities
@@ -10,6 +13,7 @@ import com.thikeiw.lolinfo.data.mappers.toDomain
 import com.thikeiw.lolinfo.data.mappers.toEntity
 import com.thikeiw.lolinfo.data.remote.CommunityDragonService
 import com.thikeiw.lolinfo.data.remote.DataDragonService
+import com.thikeiw.lolinfo.data.sync.SkinFlagSyncRepository
 import com.thikeiw.lolinfo.domain.model.Champion
 import com.thikeiw.lolinfo.domain.model.Skin
 import javax.inject.Inject
@@ -18,11 +22,13 @@ import java.util.concurrent.ConcurrentHashMap
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 
@@ -61,6 +67,7 @@ interface CatalogRepository {
   suspend fun fetchChampionLore(championId: String): Result<String>
 }
 
+@OptIn(ExperimentalCoroutinesApi::class)
 @Singleton
 class DefaultCatalogRepository
 @Inject
@@ -70,6 +77,9 @@ constructor(
   private val dao: CatalogDao,
   private val preferences: CatalogPreferences,
   private val skinPrices: SkinPriceCatalog,
+  private val authRepository: AuthRepository,
+  private val syncRepository: SkinFlagSyncRepository,
+  private val deviceIdProvider: DeviceIdProvider,
 ) : CatalogRepository {
 
   override fun observeChampions(): Flow<List<Champion>> =
@@ -79,33 +89,38 @@ constructor(
     dao.observeChampion(id).map { it?.toDomain() }
 
   override fun observeSkins(championId: String): Flow<List<Skin>> =
-    combine(dao.observeSkins(championId), dao.observeSkinFlags()) { skins, flags ->
-      val flagsBySkin = flags.associateBy { it.skinId }
-      val championName = dao.getChampion(championId)?.name.orEmpty()
-      skins.map { entity ->
-        val flag = flagsBySkin[entity.id]
-        entity.toDomain(
-          championName = championName,
-          isFavorite = flag?.isFavorite ?: false,
-          isOwned = flag?.isOwned ?: false,
-        )
+    authRepository.currentUid.flatMapLatest { uid ->
+      combine(dao.observeSkins(championId), dao.observeSkinFlags(uid ?: LEGACY_UID)) { skins, flags ->
+        val flagsBySkin = flags.associateBy { it.skinId }
+        val championName = dao.getChampion(championId)?.name.orEmpty()
+        skins.map { entity ->
+          val flag = flagsBySkin[entity.id]
+          entity.toDomain(
+            championName = championName,
+            isFavorite = flag?.isFavorite ?: false,
+            isOwned = flag?.isOwned ?: false,
+          )
+        }
       }
     }
 
   override fun observeAllSkins(): Flow<List<Skin>> =
-    combine(dao.observeAllSkins(), dao.observeChampions(), dao.observeSkinFlags()) {
-      skins,
-      champions,
-      flags ->
-      val names = champions.associate { it.id to it.name }
-      val flagsBySkin = flags.associateBy { it.skinId }
-      skins.map { entity ->
-        val flag = flagsBySkin[entity.id]
-        entity.toDomain(
-          championName = names[entity.championId].orEmpty(),
-          isFavorite = flag?.isFavorite ?: false,
-          isOwned = flag?.isOwned ?: false,
-        )
+    authRepository.currentUid.flatMapLatest { uid ->
+      combine(
+        dao.observeAllSkins(),
+        dao.observeChampions(),
+        dao.observeSkinFlags(uid ?: LEGACY_UID),
+      ) { skins, champions, flags ->
+        val names = champions.associate { it.id to it.name }
+        val flagsBySkin = flags.associateBy { it.skinId }
+        skins.map { entity ->
+          val flag = flagsBySkin[entity.id]
+          entity.toDomain(
+            championName = names[entity.championId].orEmpty(),
+            isFavorite = flag?.isFavorite ?: false,
+            isOwned = flag?.isOwned ?: false,
+          )
+        }
       }
     }
 
@@ -116,8 +131,21 @@ constructor(
     updateSkinFlag(skinId) { it.copy(isOwned = owned) }
 
   private suspend fun updateSkinFlag(skinId: Int, transform: (SkinFlagEntity) -> SkinFlagEntity) {
-    val current = dao.getSkinFlag(skinId) ?: SkinFlagEntity(skinId = skinId)
-    dao.upsertSkinFlag(transform(current))
+    // Sin sesión (p. ej. primer arranque offline) se guarda bajo el uid temporal "legacy";
+    // al iniciar sesión se reclama para la cuenta (ver claimLegacyFlags).
+    val uid = authRepository.ensureSignedIn().getOrNull() ?: LEGACY_UID
+    val current = dao.getSkinFlag(uid, skinId) ?: SkinFlagEntity(uid = uid, skinId = skinId)
+    val updated =
+      transform(current).copy(
+        uid = uid,
+        revision = current.revision + 1,
+        updatedBy = deviceIdProvider.deviceId,
+        pendingSync = true,
+      )
+    dao.upsertSkinFlag(updated)
+    if (uid != LEGACY_UID) {
+      prefetchScope.launch { syncRepository.pushFlag(updated) }
+    }
   }
 
   override fun observeCatalogVersion(): Flow<String?> = preferences.catalogVersion

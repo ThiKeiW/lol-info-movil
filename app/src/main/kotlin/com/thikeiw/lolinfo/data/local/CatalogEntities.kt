@@ -51,15 +51,24 @@ data class SkinEntity(
   val priceMe: Int? = null,
 )
 
+/** uid temporal para marcas creadas sin sesión (offline); se reclaman al iniciar sesión. */
+const val LEGACY_UID = "legacy"
+
 /**
  * Marcas por usuario (favorita / en posesión) en tabla aparte: replaceCatalog borra skins,
- * y estas preferencias no deben perderse al re-sincronizar.
+ * y estas preferencias no deben perderse al re-sincronizar. La clave es (uid, skinId) para que
+ * cada cuenta tenga su propia colección; `revision` es un reloj lógico (Lamport) y `updatedBy`
+ * el deviceId que resuelve empates, de modo que nunca se comparan relojes de pared.
  */
-@Entity(tableName = "skin_flags")
+@Entity(tableName = "skin_flags", primaryKeys = ["uid", "skinId"], indices = [Index("uid")])
 data class SkinFlagEntity(
-  @PrimaryKey val skinId: Int,
+  val uid: String,
+  val skinId: Int,
   val isFavorite: Boolean = false,
   val isOwned: Boolean = false,
+  val revision: Long = 0L,
+  val updatedBy: String = "",
+  val pendingSync: Boolean = false,
 )
 
 class StringListConverter {

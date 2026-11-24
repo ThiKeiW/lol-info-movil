@@ -10,3 +10,5 @@ import kotlinx.serialization.Serializable
 @Serializable data object FavoriteSkins : NavKey
 
 @Serializable data object OwnedSkins : NavKey
+
+@Serializable data object Account : NavKey

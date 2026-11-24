@@ -16,6 +16,7 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Inventory2
@@ -66,6 +67,7 @@ fun ChampionsScreen(
   onChampionClick: (String) -> Unit,
   onFavoritesClick: () -> Unit = {},
   onOwnedClick: () -> Unit = {},
+  onAccountClick: () -> Unit = {},
   viewModel: ChampionsViewModel = hiltViewModel(),
 ) {
   val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -80,6 +82,7 @@ fun ChampionsScreen(
     onChampionClick = onChampionClick,
     onFavoritesClick = onFavoritesClick,
     onOwnedClick = onOwnedClick,
+    onAccountClick = onAccountClick,
     locale = locale,
     onLocaleChange = { newLocale ->
       scope.launch {
@@ -101,6 +104,7 @@ internal fun ChampionsContent(
   onChampionClick: (String) -> Unit,
   onFavoritesClick: () -> Unit = {},
   onOwnedClick: () -> Unit = {},
+  onAccountClick: () -> Unit = {},
   locale: String = CatalogLocales.ES_MX,
   onLocaleChange: (String) -> Unit = {},
 ) {
@@ -125,6 +129,12 @@ internal fun ChampionsContent(
           }
         },
         actions = {
+          IconButton(onClick = onAccountClick) {
+            Icon(
+              imageVector = Icons.Default.AccountCircle,
+              contentDescription = stringResource(R.string.account_action_open),
+            )
+          }
           IconButton(onClick = onFavoritesClick) {
             Icon(
               imageVector = Icons.Default.Favorite,

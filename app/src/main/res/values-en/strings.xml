@@ -53,6 +53,28 @@
     <string name="skin_video_open_youtube">Open in YouTube</string>
     <string name="skin_video_not_found">No video found for this skin. Check your connection and try again.</string>
 
+    <string name="account_title">Account &amp; sync</string>
+    <string name="account_action_open">Account &amp; sync</string>
+    <string name="account_anonymous_title">Anonymous session</string>
+    <string name="account_anonymous_body">Your marks stay on this device. Link Google to sync them across devices.</string>
+    <string name="account_linked_title">Google account</string>
+    <string name="account_signed_out_title">Signed out</string>
+    <string name="account_signed_out_body">Sign in or continue as a guest to keep your marks.</string>
+    <string name="account_link_google">Link with Google</string>
+    <string name="account_sign_in_google">Sign in with Google</string>
+    <string name="account_sign_out">Sign out</string>
+    <string name="account_continue_guest">Continue as guest</string>
+    <string name="account_sync_now">Sync now</string>
+    <string name="account_sync_idle">Not synced</string>
+    <string name="account_sync_syncing">Syncing…</string>
+    <string name="account_sync_success">Last sync: %1$s</string>
+    <string name="account_sync_error">Sync error: %1$s</string>
+    <string name="account_google_not_configured">Google Web Client ID is not configured (google.webClientId in gradle.properties).</string>
+    <string name="account_signed_in_google">Signed in with Google</string>
+    <string name="account_linked_google">Account linked with Google</string>
+    <string name="account_signed_out">Signed out</string>
+    <string name="account_error">The operation could not be completed</string>
+
     <string name="action_refresh">Refresh</string>
     <string name="action_retry">Retry</string>
     <string name="action_back">Back</string>

@@ -4,7 +4,12 @@ plugins {
   alias(libs.plugins.kotlin.serialization)
   alias(libs.plugins.ksp)
   alias(libs.plugins.hilt)
+  alias(libs.plugins.google.services)
 }
+
+// Web Client ID (tipo "Web application") del proveedor Google de Firebase; se define en
+// gradle.properties como `google.webClientId=...`. No es secreto, pero se deja fuera del código.
+val googleWebClientId: String = (project.findProperty("google.webClientId") as String?) ?: ""
 
 android {
   namespace = "com.thikeiw.lolinfo"
@@ -18,6 +23,7 @@ android {
 
     buildConfigField("String", "DD_URL", "\"https://ddragon.leagueoflegends.com/\"")
     buildConfigField("String", "CDRAGON_URL", "\"https://raw.communitydragon.org/\"")
+    buildConfigField("String", "GOOGLE_WEB_CLIENT_ID", "\"$googleWebClientId\"")
   }
 
   buildTypes {
@@ -119,4 +125,14 @@ dependencies {
   // Images
   implementation(libs.coil.compose)
   implementation(libs.coil.network.okhttp)
+
+  // Firebase (Auth + Firestore)
+  implementation(platform(libs.firebase.bom))
+  implementation(libs.firebase.auth)
+  implementation(libs.firebase.firestore)
+
+  // Google Sign-In via Credential Manager
+  implementation(libs.androidx.credentials)
+  implementation(libs.androidx.credentials.play.services.auth)
+  implementation(libs.googleid)
 }

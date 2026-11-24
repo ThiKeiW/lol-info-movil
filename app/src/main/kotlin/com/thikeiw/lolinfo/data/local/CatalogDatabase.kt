@@ -6,7 +6,7 @@ import androidx.room.TypeConverters
 
 @Database(
   entities = [ChampionEntity::class, SkinEntity::class, SkinFlagEntity::class],
-  version = 4,
+  version = 5,
   exportSchema = false,
 )
 @TypeConverters(StringListConverter::class)

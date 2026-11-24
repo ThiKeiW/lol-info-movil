@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "718126377346",
+    "project_id": "lolinfo-stats",
+    "storage_bucket": "lolinfo-stats.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:718126377346:android:a6372b73f613e6d535c79b",
+        "android_client_info": {
+          "package_name": "com.thikeiw.lolinfo"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB-PEaL-snSFg0E6g4OXFbdm5qvseGagW8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

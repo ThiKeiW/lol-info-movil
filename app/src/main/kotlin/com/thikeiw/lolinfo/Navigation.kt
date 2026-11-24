@@ -4,6 +4,7 @@ import androidx.compose.runtime.Composable
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.ui.NavDisplay
+import com.thikeiw.lolinfo.ui.account.AccountScreen
 import com.thikeiw.lolinfo.ui.championdetail.ChampionDetailScreen
 import com.thikeiw.lolinfo.ui.champions.ChampionsScreen
 import com.thikeiw.lolinfo.ui.skins.FavoriteSkinsScreen
@@ -23,6 +24,7 @@ fun MainNavigation() {
             onChampionClick = { championId -> backStack.add(ChampionDetail(championId)) },
             onFavoritesClick = { backStack.add(FavoriteSkins) },
             onOwnedClick = { backStack.add(OwnedSkins) },
+            onAccountClick = { backStack.add(Account) },
           )
         }
         entry<ChampionDetail> { key ->
@@ -36,6 +38,9 @@ fun MainNavigation() {
         }
         entry<OwnedSkins> {
           OwnedSkinsScreen(onBack = { backStack.removeLastOrNull() })
+        }
+        entry<Account> {
+          AccountScreen(onBack = { backStack.removeLastOrNull() })
         }
       },
   )
