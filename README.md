@@ -80,6 +80,18 @@ skin favorita por campeón.
    que falta configurar.
 4. Publica `firestore.rules` en Firestore → Rules de la consola, o con la CLI:
    `npm i -g firebase-tools`, `firebase login` y `firebase deploy --only firestore:rules`.
+5. **Restringe la API key** en Google Cloud Console → APIs & Services → Credentials:
+   - *Application restrictions* → **Android apps** → package `com.thikeiw.lolinfo` + SHA-1 de
+     debug y release.
+   - *API restrictions* → solo las APIs usadas (Identity Toolkit, Cloud Firestore, etc.).
+   - Si la key ya estuvo pública, **rótala**: crea una nueva, reemplázala en
+     `google-services.json` y elimina la anterior.
+
+`google-services.json` contiene la **API key del cliente Android**, no un secreto: es configuración
+pensada para versionarse y su riesgo se mitiga restringiéndola (y rotándola si se expuso), no
+reescribiendo el historial de Git. El `google.webClientId` también es público. Opcional: activa
+**Firebase App Check** (Play Integrity) para bloquear clientes no legítimos. Nunca versiones
+keystores, `local.properties`, cuentas de servicio ni `.env`; `.gitignore` ya los excluye.
 
 ## Compilar y ejecutar
 
