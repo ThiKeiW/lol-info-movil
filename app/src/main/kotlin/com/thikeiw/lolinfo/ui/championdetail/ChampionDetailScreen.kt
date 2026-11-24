@@ -1,12 +1,12 @@
 package com.thikeiw.lolinfo.ui.championdetail
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -15,8 +15,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.PlayArrow
-import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -46,6 +44,7 @@ import com.thikeiw.lolinfo.R
 import com.thikeiw.lolinfo.domain.model.Champion
 import com.thikeiw.lolinfo.domain.model.Skin
 import com.thikeiw.lolinfo.ui.skinvideo.SkinVideoOverlay
+import com.thikeiw.lolinfo.ui.skins.SkinCard
 import com.thikeiw.lolinfo.ui.theme.LoLSkinScopeTheme
 
 @Composable
@@ -114,9 +113,11 @@ internal fun ChampionDetailContent(
             activeVideoSkinId = skin.id
             activeVideoSkinNum = skin.num
             activeVideoSkinName = skin.name
-            activeVideoChampionName = uiState.champion?.name ?: ""
+            activeVideoChampionName = uiState.champion.name
             activeVideoChampionId = skin.championId
           },
+          onToggleFavorite = { skin -> viewModel?.toggleFavorite(skin) },
+          onToggleOwned = { skin -> viewModel?.toggleOwned(skin) },
           modifier = Modifier.padding(innerPadding),
         )
     }
@@ -144,6 +145,8 @@ private fun ChampionDetailList(
   skins: List<Skin>,
   baseSplashUrl: String?,
   onPlayVideo: (Skin) -> Unit,
+  onToggleFavorite: (Skin) -> Unit,
+  onToggleOwned: (Skin) -> Unit,
   modifier: Modifier = Modifier,
 ) {
   LazyColumn(
@@ -191,69 +194,12 @@ private fun ChampionDetailList(
       }
     }
     items(skins, key = { it.id }) { skin ->
-      SkinCard(skin = skin, onPlay = { onPlayVideo(skin) })
-    }
-  }
-}
-
-@OptIn(ExperimentalLayoutApi::class)
-@Composable
-private fun SkinCard(skin: Skin, onPlay: () -> Unit) {
-  val priceLabel =
-    when {
-      skin.priceMe != null -> stringResource(R.string.skin_price_me, skin.priceMe)
-      skin.priceRp != null -> stringResource(R.string.skin_price_rp, skin.priceRp)
-      else -> null
-    }
-
-  Card(modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 6.dp)) {
-    Column {
-      AsyncImage(
-        model = skin.splashUrl,
-        contentDescription = skin.name,
-        contentScale = ContentScale.Crop,
-        modifier = Modifier.fillMaxWidth().aspectRatio(16f / 9f),
+      SkinCard(
+        skin = skin,
+        onPlay = { onPlayVideo(skin) },
+        onToggleFavorite = { onToggleFavorite(skin) },
+        onToggleOwned = { onToggleOwned(skin) },
       )
-      Column(modifier = Modifier.padding(12.dp)) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-          Text(
-            text = skin.name,
-            style = MaterialTheme.typography.titleSmall,
-            modifier = Modifier.weight(1f),
-          )
-          IconButton(onClick = onPlay) {
-            Icon(
-              imageVector = Icons.Filled.PlayArrow,
-              contentDescription = stringResource(R.string.skin_watch_video),
-              tint = MaterialTheme.colorScheme.primary,
-            )
-          }
-        }
-        if (
-          skin.rarity != null ||
-            skin.isLegacy ||
-            skin.skinLines.isNotEmpty() ||
-            priceLabel != null
-        ) {
-          FlowRow(
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-            modifier = Modifier.padding(top = 6.dp),
-          ) {
-            skin.rarity?.let { rarity ->
-              SuggestionChip(onClick = {}, label = { Text(localizedRarity(rarity)) })
-            }
-            priceLabel?.let { price ->
-              SuggestionChip(onClick = {}, label = { Text(price) })
-            }
-            if (skin.isLegacy) {
-              SuggestionChip(onClick = {}, label = { Text(stringResource(R.string.skin_legacy)) })
-            }
-            skin.skinLines.forEach { line ->
-              SuggestionChip(onClick = {}, label = { Text(line) })
-            }
-          }
-        }
-      }
     }
   }
 }
@@ -326,19 +272,3 @@ private val TAG_LABELS: Map<String, Int> =
 @Composable
 private fun localizedTag(tag: String): String =
   TAG_LABELS[tag]?.let { stringResource(it) } ?: tag
-
-/** Raridades de CommunityDragon (códigos k*) localizados con recursos de la app. */
-@Composable
-private fun localizedRarity(rarity: String): String =
-  stringResource(
-    when (rarity) {
-      "kLegendary" -> R.string.skin_rarity_legendary
-      "kMythic" -> R.string.skin_rarity_mythic
-      "kEpic" -> R.string.skin_rarity_epic
-      "kRare" -> R.string.skin_rarity_rare
-      "kTranscendent" -> R.string.skin_rarity_transcendent
-      "kUltimate" -> R.string.skin_rarity_ultimate
-      "kExalted" -> R.string.skin_rarity_exalted
-      else -> R.string.skin_rarity_other
-    },
-  )

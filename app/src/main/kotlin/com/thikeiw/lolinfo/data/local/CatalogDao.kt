@@ -23,6 +23,20 @@ abstract class CatalogDao {
   @Query("SELECT * FROM skins WHERE championId = :id ORDER BY num")
   abstract fun observeSkins(id: String): Flow<List<SkinEntity>>
 
+  @Query("SELECT * FROM skins")
+  abstract fun observeAllSkins(): Flow<List<SkinEntity>>
+
+  @Query("SELECT * FROM skin_flags")
+  abstract fun observeSkinFlags(): Flow<List<SkinFlagEntity>>
+
+  @Query("SELECT * FROM skin_flags WHERE skinId = :skinId")
+  abstract suspend fun getSkinFlag(skinId: Int): SkinFlagEntity?
+
+  @Upsert abstract suspend fun upsertSkinFlag(flag: SkinFlagEntity)
+
+  @Query("DELETE FROM skin_flags WHERE skinId = :skinId")
+  abstract suspend fun deleteSkinFlag(skinId: Int)
+
   @Query("SELECT COUNT(*) FROM champions") abstract suspend fun countChampions(): Int
 
   @Upsert abstract suspend fun upsertChampions(items: List<ChampionEntity>)

@@ -35,6 +35,20 @@
     <string name="skin_price_rp">%1$d RP</string>
     <string name="skin_price_me">%1$d EM</string>
     <string name="skin_watch_video">Ver video (SkinSpotlights)</string>
+    <string name="skin_favorite">Marcar como favorita</string>
+    <string name="skin_unfavorite">Quitar de favoritas</string>
+    <string name="skin_owned">En posesión</string>
+    <string name="skin_not_owned">No obtenido</string>
+
+    <string name="favorites_title">Skins favoritas</string>
+    <string name="favorites_empty">Aún no tienes skins favoritas. Márcalas con el corazón en el detalle de un campeón.</string>
+    <string name="owned_title">En posesión</string>
+    <string name="owned_empty">Aún no has marcado skins como obtenidas. Toca «No obtenido» en el detalle de un campeón.</string>
+    <string name="skins_collection_count">%1$d skins</string>
+    <string name="skins_search_hint">Buscar skin o campeón</string>
+    <string name="skins_no_results">Sin resultados para «%1$s»</string>
+    <string name="filter_legacy">Legado</string>
+    <string name="filter_clear">Limpiar filtros</string>
     <string name="skin_video_channel">Video por SkinSpotlights en YouTube</string>
     <string name="skin_video_open_youtube">Abrir en YouTube</string>
     <string name="skin_video_not_found">No se encontró un video para este skin. Revisa tu conexión e inténtalo de nuevo.</string>

@@ -48,7 +48,10 @@ constructor(
             ChampionDetailUiState(
               champion = champion,
               // La skin base (num 0) no se lista; su splash sirve de banner.
-              skins = allSkins.filterNot { it.isBase },
+              skins =
+                allSkins
+                  .filterNot { it.isBase }
+                  .map { it.copy(championName = champion?.name.orEmpty()) },
               baseSplashUrl = allSkins.firstOrNull { it.isBase }?.splashUrl,
               isLoading = false,
               isNotFound = champion == null,
@@ -71,6 +74,16 @@ constructor(
   /** Nombre en inglés del skin para la búsqueda de video (canal SkinSpotlights en inglés). */
   suspend fun englishSkinNameForVideo(championId: String, skinNum: Int): String? =
     runCatching { repository.englishSkinName(championId, skinNum) }.getOrNull()
+
+  /** Alterna la marca de skin favorita del usuario. */
+  fun toggleFavorite(skin: Skin) {
+    viewModelScope.launch { repository.setSkinFavorite(skin.id, !skin.isFavorite) }
+  }
+
+  /** Alterna la marca de skin en posesión del usuario. */
+  fun toggleOwned(skin: Skin) {
+    viewModelScope.launch { repository.setSkinOwned(skin.id, !skin.isOwned) }
+  }
 
   /** Resuelve el video del skin: embed de YouTube si hay resultado, o la búsqueda del canal. */
 

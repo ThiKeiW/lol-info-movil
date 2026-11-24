@@ -17,6 +17,8 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Clear
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.Inventory2
 import androidx.compose.material.icons.filled.Language
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Search
@@ -62,6 +64,8 @@ import kotlinx.coroutines.launch
 @Composable
 fun ChampionsScreen(
   onChampionClick: (String) -> Unit,
+  onFavoritesClick: () -> Unit = {},
+  onOwnedClick: () -> Unit = {},
   viewModel: ChampionsViewModel = hiltViewModel(),
 ) {
   val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -74,6 +78,8 @@ fun ChampionsScreen(
     onQueryChange = viewModel::onQueryChange,
     onRefresh = { viewModel.refresh(force = true) },
     onChampionClick = onChampionClick,
+    onFavoritesClick = onFavoritesClick,
+    onOwnedClick = onOwnedClick,
     locale = locale,
     onLocaleChange = { newLocale ->
       scope.launch {
@@ -93,6 +99,8 @@ internal fun ChampionsContent(
   onQueryChange: (String) -> Unit,
   onRefresh: () -> Unit,
   onChampionClick: (String) -> Unit,
+  onFavoritesClick: () -> Unit = {},
+  onOwnedClick: () -> Unit = {},
   locale: String = CatalogLocales.ES_MX,
   onLocaleChange: (String) -> Unit = {},
 ) {
@@ -117,6 +125,18 @@ internal fun ChampionsContent(
           }
         },
         actions = {
+          IconButton(onClick = onFavoritesClick) {
+            Icon(
+              imageVector = Icons.Default.Favorite,
+              contentDescription = stringResource(R.string.favorites_title),
+            )
+          }
+          IconButton(onClick = onOwnedClick) {
+            Icon(
+              imageVector = Icons.Default.Inventory2,
+              contentDescription = stringResource(R.string.owned_title),
+            )
+          }
           var menuOpen by remember { mutableStateOf(false) }
           IconButton(onClick = { menuOpen = true }) {
             Icon(

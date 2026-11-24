@@ -6,3 +6,7 @@ import kotlinx.serialization.Serializable
 @Serializable data object Champions : NavKey
 
 @Serializable data class ChampionDetail(val championId: String) : NavKey
+
+@Serializable data object FavoriteSkins : NavKey
+
+@Serializable data object OwnedSkins : NavKey

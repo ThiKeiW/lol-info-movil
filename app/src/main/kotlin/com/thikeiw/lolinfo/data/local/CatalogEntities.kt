@@ -51,6 +51,17 @@ data class SkinEntity(
   val priceMe: Int? = null,
 )
 
+/**
+ * Marcas por usuario (favorita / en posesión) en tabla aparte: replaceCatalog borra skins,
+ * y estas preferencias no deben perderse al re-sincronizar.
+ */
+@Entity(tableName = "skin_flags")
+data class SkinFlagEntity(
+  @PrimaryKey val skinId: Int,
+  val isFavorite: Boolean = false,
+  val isOwned: Boolean = false,
+)
+
 class StringListConverter {
   @TypeConverter fun fromList(value: List<String>): String = value.joinToString(SEPARATOR)
 

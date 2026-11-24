@@ -28,6 +28,11 @@ data class Skin(
   val loadingUrl: String,
   val priceRp: Int? = null,
   val priceMe: Int? = null,
+  /** Nombre del campeón dueño de la skin (para listados globales); se completa al observar. */
+  val championName: String = "",
+  /** Marcas del usuario; se resuelven desde la tabla skin_flags. */
+  val isFavorite: Boolean = false,
+  val isOwned: Boolean = false,
 ) {
   val isBase: Boolean get() = num == 0
 }

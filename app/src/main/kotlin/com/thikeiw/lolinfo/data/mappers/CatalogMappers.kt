@@ -73,7 +73,11 @@ fun ChampionEntity.toDomain(): Champion =
     imageUrl = imageUrl,
   )
 
-fun SkinEntity.toDomain(): Skin =
+fun SkinEntity.toDomain(
+  championName: String = "",
+  isFavorite: Boolean = false,
+  isOwned: Boolean = false,
+): Skin =
   Skin(
     id = id,
     championId = championId,
@@ -86,6 +90,9 @@ fun SkinEntity.toDomain(): Skin =
     loadingUrl = loadingUrl,
     priceRp = priceRp,
     priceMe = priceMe,
+    championName = championName,
+    isFavorite = isFavorite,
+    isOwned = isOwned,
   )
 
 /**

@@ -6,6 +6,8 @@ import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.ui.NavDisplay
 import com.thikeiw.lolinfo.ui.championdetail.ChampionDetailScreen
 import com.thikeiw.lolinfo.ui.champions.ChampionsScreen
+import com.thikeiw.lolinfo.ui.skins.FavoriteSkinsScreen
+import com.thikeiw.lolinfo.ui.skins.OwnedSkinsScreen
 
 @Composable
 fun MainNavigation() {
@@ -18,7 +20,9 @@ fun MainNavigation() {
       entryProvider {
         entry<Champions> {
           ChampionsScreen(
-            onChampionClick = { championId -> backStack.add(ChampionDetail(championId)) }
+            onChampionClick = { championId -> backStack.add(ChampionDetail(championId)) },
+            onFavoritesClick = { backStack.add(FavoriteSkins) },
+            onOwnedClick = { backStack.add(OwnedSkins) },
           )
         }
         entry<ChampionDetail> { key ->
@@ -26,6 +30,12 @@ fun MainNavigation() {
             championId = key.championId,
             onBack = { backStack.removeLastOrNull() },
           )
+        }
+        entry<FavoriteSkins> {
+          FavoriteSkinsScreen(onBack = { backStack.removeLastOrNull() })
+        }
+        entry<OwnedSkins> {
+          OwnedSkinsScreen(onBack = { backStack.removeLastOrNull() })
         }
       },
   )

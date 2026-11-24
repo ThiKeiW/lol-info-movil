@@ -35,6 +35,20 @@
     <string name="skin_price_rp">%1$d RP</string>
     <string name="skin_price_me">%1$d ME</string>
     <string name="skin_watch_video">Watch video (SkinSpotlights)</string>
+    <string name="skin_favorite">Mark as favorite</string>
+    <string name="skin_unfavorite">Remove from favorites</string>
+    <string name="skin_owned">Owned</string>
+    <string name="skin_not_owned">Not owned</string>
+
+    <string name="favorites_title">Favorite skins</string>
+    <string name="favorites_empty">No favorite skins yet. Mark them with the heart in a champion’s detail.</string>
+    <string name="owned_title">Owned</string>
+    <string name="owned_empty">No skins marked as owned yet. Tap “Not owned” in a champion’s detail.</string>
+    <string name="skins_collection_count">%1$d skins</string>
+    <string name="skins_search_hint">Search skin or champion</string>
+    <string name="skins_no_results">No results for “%1$s”</string>
+    <string name="filter_legacy">Legacy</string>
+    <string name="filter_clear">Clear filters</string>
     <string name="skin_video_channel">Video by SkinSpotlights on YouTube</string>
     <string name="skin_video_open_youtube">Open in YouTube</string>
     <string name="skin_video_not_found">No video found for this skin. Check your connection and try again.</string>

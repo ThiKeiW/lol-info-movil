@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Icono de RP (riot-points-icon.svg de CommunityDragon, convertido a vector drawable) -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="13dp"
+    android:height="14dp"
+    android:viewportWidth="13"
+    android:viewportHeight="14">
+  <path
+      android:fillColor="#E2BA3D"
+      android:fillType="evenOdd"
+      android:pathData="M8.63343,2.25848 L6.5001,0.600098 L4.36676,2.25848 V8.25781 L6.5001,9.7405 L8.63343,8.25781 V2.25848 Z M12.0468,6.1152 L12.9001,5.49383 L10.3401,3.11553 V9.11486 L7.35343,11.2575 V13.4001 L12.9001,9.68479 L12.0468,8.68634 V6.1152 Z M2.6601,3.11553 L0.100098,5.49383 L0.953431,6.1152 V8.68634 L0.100098,9.68479 L5.64676,13.4001 V11.2575 L2.6601,9.11486 V3.11553 Z" />
+</vector>

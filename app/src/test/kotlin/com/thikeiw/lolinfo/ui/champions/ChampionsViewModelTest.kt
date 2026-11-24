@@ -103,6 +103,12 @@ private class FakeCatalogRepository : CatalogRepository {
 
   override fun observeSkins(championId: String): Flow<List<Skin>> = flowOf(emptyList())
 
+  override fun observeAllSkins(): Flow<List<Skin>> = flowOf(emptyList())
+
+  override suspend fun setSkinFavorite(skinId: Int, favorite: Boolean) {}
+
+  override suspend fun setSkinOwned(skinId: Int, owned: Boolean) {}
+
   override fun observeCatalogVersion(): Flow<String?> = flowOf("16.21.1")
 
   override fun observeLocale(): Flow<String> = flowOf("es_mx")

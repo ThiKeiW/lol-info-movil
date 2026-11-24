@@ -3,6 +3,7 @@ package com.thikeiw.lolinfo.data
 import com.thikeiw.lolinfo.data.local.CatalogDao
 import com.thikeiw.lolinfo.data.local.CatalogLocales
 import com.thikeiw.lolinfo.data.local.CatalogPreferences
+import com.thikeiw.lolinfo.data.local.SkinFlagEntity
 import com.thikeiw.lolinfo.data.local.SkinPriceCatalog
 import com.thikeiw.lolinfo.data.mappers.buildSkinEntities
 import com.thikeiw.lolinfo.data.mappers.toDomain
@@ -20,6 +21,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
@@ -30,6 +32,15 @@ interface CatalogRepository {
   fun observeChampion(id: String): Flow<Champion?>
 
   fun observeSkins(championId: String): Flow<List<Skin>>
+
+  /** Todas las skins del catálogo con nombre de campeón y marcas del usuario resueltas. */
+  fun observeAllSkins(): Flow<List<Skin>>
+
+  /** Marca o desmarca una skin como favorita del usuario. */
+  suspend fun setSkinFavorite(skinId: Int, favorite: Boolean)
+
+  /** Marca o desmarca una skin como obtenida (en posesión del usuario). */
+  suspend fun setSkinOwned(skinId: Int, owned: Boolean)
 
   fun observeCatalogVersion(): Flow<String?>
 
@@ -68,7 +79,46 @@ constructor(
     dao.observeChampion(id).map { it?.toDomain() }
 
   override fun observeSkins(championId: String): Flow<List<Skin>> =
-    dao.observeSkins(championId).map { skins -> skins.map { it.toDomain() } }
+    combine(dao.observeSkins(championId), dao.observeSkinFlags()) { skins, flags ->
+      val flagsBySkin = flags.associateBy { it.skinId }
+      val championName = dao.getChampion(championId)?.name.orEmpty()
+      skins.map { entity ->
+        val flag = flagsBySkin[entity.id]
+        entity.toDomain(
+          championName = championName,
+          isFavorite = flag?.isFavorite ?: false,
+          isOwned = flag?.isOwned ?: false,
+        )
+      }
+    }
+
+  override fun observeAllSkins(): Flow<List<Skin>> =
+    combine(dao.observeAllSkins(), dao.observeChampions(), dao.observeSkinFlags()) {
+      skins,
+      champions,
+      flags ->
+      val names = champions.associate { it.id to it.name }
+      val flagsBySkin = flags.associateBy { it.skinId }
+      skins.map { entity ->
+        val flag = flagsBySkin[entity.id]
+        entity.toDomain(
+          championName = names[entity.championId].orEmpty(),
+          isFavorite = flag?.isFavorite ?: false,
+          isOwned = flag?.isOwned ?: false,
+        )
+      }
+    }
+
+  override suspend fun setSkinFavorite(skinId: Int, favorite: Boolean) =
+    updateSkinFlag(skinId) { it.copy(isFavorite = favorite) }
+
+  override suspend fun setSkinOwned(skinId: Int, owned: Boolean) =
+    updateSkinFlag(skinId) { it.copy(isOwned = owned) }
+
+  private suspend fun updateSkinFlag(skinId: Int, transform: (SkinFlagEntity) -> SkinFlagEntity) {
+    val current = dao.getSkinFlag(skinId) ?: SkinFlagEntity(skinId = skinId)
+    dao.upsertSkinFlag(transform(current))
+  }
 
   override fun observeCatalogVersion(): Flow<String?> = preferences.catalogVersion
 
