@@ -44,6 +44,7 @@ import androidx.lifecycle.viewModelScope
 import com.thikeiw.lolinfo.R
 import com.thikeiw.lolinfo.data.CatalogRepository
 import com.thikeiw.lolinfo.domain.model.Skin
+import com.thikeiw.lolinfo.ui.championaudio.ChampionAudioSheet
 import com.thikeiw.lolinfo.ui.skinvideo.SkinVideoOverlay
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
@@ -218,12 +219,16 @@ private fun SkinCollectionScreen(
   englishSkinNameResolver: suspend (championId: String, skinNum: Int) -> String?,
 ) {
   val scope = rememberCoroutineScope()
-  // Estado del modal de video sobrevive a rotaciones (id y nombres, no objetos).
   var activeVideoSkinId by rememberSaveable { mutableStateOf<Int?>(null) }
   var activeVideoSkinNum by rememberSaveable { mutableStateOf(0) }
   var activeVideoSkinName by rememberSaveable { mutableStateOf("") }
   var activeVideoChampionName by rememberSaveable { mutableStateOf("") }
   var activeVideoChampionId by rememberSaveable { mutableStateOf("") }
+
+  var activeAudioSkinNum by rememberSaveable { mutableStateOf<Int?>(null) }
+  var activeAudioSkinName by rememberSaveable { mutableStateOf("") }
+  var activeAudioChampionId by rememberSaveable { mutableStateOf("") }
+  var activeAudioChampionName by rememberSaveable { mutableStateOf("") }
 
   Box(modifier = Modifier.fillMaxSize()) {
     Scaffold(
@@ -309,6 +314,12 @@ private fun SkinCollectionScreen(
                     activeVideoChampionName = skin.championName
                     activeVideoChampionId = skin.championId
                   },
+                  onAudio = {
+                    activeAudioSkinNum = skin.num
+                    activeAudioSkinName = skin.name
+                    activeAudioChampionId = skin.championId
+                    activeAudioChampionName = skin.championName
+                  },
                   onToggleFavorite = { onToggleFavorite(skin) },
                   onToggleOwned = { onToggleOwned(skin) },
                 )
@@ -328,6 +339,16 @@ private fun SkinCollectionScreen(
           englishSkinNameResolver(activeVideoChampionId, activeVideoSkinNum)
         },
         onDismiss = { activeVideoSkinId = null },
+      )
+    }
+
+    if (activeAudioSkinNum != null) {
+      ChampionAudioSheet(
+        championId = activeAudioChampionId,
+        skinNum = activeAudioSkinNum ?: 0,
+        championName = activeAudioChampionName,
+        skinName = activeAudioSkinName,
+        onDismiss = { activeAudioSkinNum = null },
       )
     }
   }

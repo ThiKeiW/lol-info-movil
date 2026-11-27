@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.VolumeUp
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.PlayArrow
@@ -41,6 +42,7 @@ import com.thikeiw.lolinfo.ui.theme.Gold
 fun SkinCard(
   skin: Skin,
   onPlay: () -> Unit,
+  onAudio: () -> Unit = {},
   onToggleFavorite: () -> Unit = {},
   onToggleOwned: () -> Unit = {},
   modifier: Modifier = Modifier,
@@ -67,7 +69,6 @@ fun SkinCard(
             style = MaterialTheme.typography.titleSmall,
             modifier = Modifier.weight(1f),
           )
-          // Icono de favorito + estado de posesión, junto al botón de reproducir video.
           IconButton(onClick = onToggleFavorite) {
             Icon(
               imageVector = if (skin.isFavorite) Icons.Filled.Favorite else Icons.Filled.FavoriteBorder,
@@ -78,7 +79,13 @@ fun SkinCard(
               tint = if (skin.isFavorite) Gold else MaterialTheme.colorScheme.onSurfaceVariant,
             )
           }
-          OwnedStatusText(isOwned = skin.isOwned, onToggle = onToggleOwned)
+          IconButton(onClick = onAudio) {
+            Icon(
+              imageVector = Icons.AutoMirrored.Filled.VolumeUp,
+              contentDescription = stringResource(R.string.skin_audio),
+              tint = MaterialTheme.colorScheme.primary,
+            )
+          }
           IconButton(onClick = onPlay) {
             Icon(
               imageVector = Icons.Filled.PlayArrow,
@@ -86,6 +93,9 @@ fun SkinCard(
               tint = MaterialTheme.colorScheme.primary,
             )
           }
+        }
+        Row(verticalAlignment = Alignment.CenterVertically) {
+          OwnedStatusText(isOwned = skin.isOwned, onToggle = onToggleOwned)
         }
         if (
           skin.rarity != null ||

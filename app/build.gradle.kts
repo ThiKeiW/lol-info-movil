@@ -23,6 +23,7 @@ android {
 
     buildConfigField("String", "DD_URL", "\"https://ddragon.leagueoflegends.com/\"")
     buildConfigField("String", "CDRAGON_URL", "\"https://raw.communitydragon.org/\"")
+    buildConfigField("String", "LOLSOUND_URL", "\"https://lolsound.com/\"")
     buildConfigField("String", "GOOGLE_WEB_CLIENT_ID", "\"$googleWebClientId\"")
   }
 

@@ -15,6 +15,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.VolumeUp
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -33,6 +34,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
@@ -43,6 +45,7 @@ import coil3.compose.AsyncImage
 import com.thikeiw.lolinfo.R
 import com.thikeiw.lolinfo.domain.model.Champion
 import com.thikeiw.lolinfo.domain.model.Skin
+import com.thikeiw.lolinfo.ui.championaudio.ChampionAudioSheet
 import com.thikeiw.lolinfo.ui.skinvideo.SkinVideoOverlay
 import com.thikeiw.lolinfo.ui.skins.SkinCard
 import com.thikeiw.lolinfo.ui.theme.LoLSkinScopeTheme
@@ -66,12 +69,16 @@ internal fun ChampionDetailContent(
   onBack: () -> Unit,
   viewModel: ChampionDetailViewModel? = null,
 ) {
-  // Estado del modal de video sobrevive a rotaciones (recordando id y nombres, no el objeto).
   var activeVideoSkinId by rememberSaveable { mutableStateOf<Int?>(null) }
   var activeVideoSkinNum by rememberSaveable { mutableStateOf(0) }
   var activeVideoSkinName by rememberSaveable { mutableStateOf("") }
   var activeVideoChampionName by rememberSaveable { mutableStateOf("") }
   var activeVideoChampionId by rememberSaveable { mutableStateOf("") }
+
+  var activeAudioSkinNum by rememberSaveable { mutableStateOf<Int?>(null) }
+  var activeAudioSkinName by rememberSaveable { mutableStateOf("") }
+  var activeAudioChampionId by rememberSaveable { mutableStateOf("") }
+  var activeAudioChampionName by rememberSaveable { mutableStateOf("") }
 
   Box(modifier = Modifier.fillMaxSize()) {
     Scaffold(
@@ -83,6 +90,23 @@ internal fun ChampionDetailContent(
             Icon(
               imageVector = Icons.AutoMirrored.Filled.ArrowBack,
               contentDescription = stringResource(R.string.action_back),
+            )
+          }
+        },
+        actions = {
+          IconButton(
+            onClick = {
+              val champion = uiState.champion ?: return@IconButton
+              activeAudioSkinNum = 0
+              activeAudioSkinName = champion.name
+              activeAudioChampionId = champion.id
+              activeAudioChampionName = champion.name
+            },
+            enabled = uiState.champion != null && !LocalInspectionMode.current,
+          ) {
+            Icon(
+              imageVector = Icons.AutoMirrored.Filled.VolumeUp,
+              contentDescription = stringResource(R.string.audio_champion_voice),
             )
           }
         },
@@ -116,6 +140,12 @@ internal fun ChampionDetailContent(
             activeVideoChampionName = uiState.champion.name
             activeVideoChampionId = skin.championId
           },
+          onPlayAudio = { skin ->
+            activeAudioSkinNum = skin.num
+            activeAudioSkinName = skin.name
+            activeAudioChampionId = skin.championId
+            activeAudioChampionName = uiState.champion.name
+          },
           onToggleFavorite = { skin -> viewModel?.toggleFavorite(skin) },
           onToggleOwned = { skin -> viewModel?.toggleOwned(skin) },
           modifier = Modifier.padding(innerPadding),
@@ -135,6 +165,16 @@ internal fun ChampionDetailContent(
         onDismiss = { activeVideoSkinId = null },
       )
     }
+
+    if (activeAudioSkinNum != null) {
+      ChampionAudioSheet(
+        championId = activeAudioChampionId,
+        skinNum = activeAudioSkinNum ?: 0,
+        championName = activeAudioChampionName,
+        skinName = activeAudioSkinName,
+        onDismiss = { activeAudioSkinNum = null },
+      )
+    }
   }
 }
 
@@ -145,6 +185,7 @@ private fun ChampionDetailList(
   skins: List<Skin>,
   baseSplashUrl: String?,
   onPlayVideo: (Skin) -> Unit,
+  onPlayAudio: (Skin) -> Unit,
   onToggleFavorite: (Skin) -> Unit,
   onToggleOwned: (Skin) -> Unit,
   modifier: Modifier = Modifier,
@@ -197,6 +238,7 @@ private fun ChampionDetailList(
       SkinCard(
         skin = skin,
         onPlay = { onPlayVideo(skin) },
+        onAudio = { onPlayAudio(skin) },
         onToggleFavorite = { onToggleFavorite(skin) },
         onToggleOwned = { onToggleOwned(skin) },
       )

@@ -50,100 +50,17 @@ skin favorita por campeón.
 - Estado: `assembleDebug testDebugUnitTest` en verde y verificado en dispositivo físico
   (sesión anónima, vinculación con Google y sincronización).
 
-## Stack
+**Audios de voz** - reproducción por skin y voz base:
 
-- Kotlin 2.3.20, AGP 9.1.1, Gradle 9.3.1, JDK 17 (toolchain)
-- Jetpack Compose (BOM 2026.03.01) + Material 3, Navigation 3
-- Hilt + KSP para inyección de dependencias
-- Retrofit 3 + OkHttp 5 + kotlinx.serialization
-- Room, DataStore, Paging 3, Coil 3
-- Firebase Auth + Cloud Firestore (BoM 35.2.0) y Credential Manager para Google Sign-In
-- WebView (overlay propio, sin ventana de diálogo) para el embed de YouTube
-
-## Requisitos
-
-- Android Studio 2026.2.2 o superior (JBR 25)
-- SDK de Android 37, minSdk 26
-- Emulador o dispositivo con Android 8.0+
-- `app/google-services.json` del proyecto Firebase y `google.webClientId=<Web Client ID>` en
-  `gradle.properties` (Google Sign-In). Las reglas de Firestore están en `firestore.rules`.
-
-## Configuración de Firebase
-
-1. `app/google-services.json` debe corresponder al `applicationId` `com.thikeiw.lolinfo`
-   (proyecto `lolinfo-stats`).
-2. En Firebase Console → Authentication → Sign-in method, habilita **Anónimo** y **Google**;
-   registra la huella SHA-1 del build de debug en la app Android.
-3. Copia el **Web client ID** (OAuth «Web application») y agrégalo a `gradle.properties`:
-   `google.webClientId=NNNN.apps.googleusercontent.com`. No es un secreto y se versiona con el
-   proyecto. Sin él la app compila y sincroniza con sesión anónima, pero el botón de Google avisa
-   que falta configurar.
-4. Publica `firestore.rules` en Firestore → Rules de la consola, o con la CLI:
-   `npm i -g firebase-tools`, `firebase login` y `firebase deploy --only firestore:rules`.
-5. **Restringe la API key** en Google Cloud Console → APIs & Services → Credentials:
-   - *Application restrictions* → **Android apps** → package `com.thikeiw.lolinfo` + SHA-1 de
-     debug y release.
-   - *API restrictions* → solo las APIs usadas (Identity Toolkit, Cloud Firestore, etc.).
-   - Si la key ya estuvo pública, **rótala**: crea una nueva, reemplázala en
-     `google-services.json` y elimina la anterior.
-
-`google-services.json` contiene la **API key del cliente Android**, no un secreto: es configuración
-pensada para versionarse y su riesgo se mitiga restringiéndola (y rotándola si se expuso), no
-reescribiendo el historial de Git. El `google.webClientId` también es público. Opcional: activa
-**Firebase App Check** (Play Integrity) para bloquear clientes no legítimos. Nunca versiones
-keystores, `local.properties`, cuentas de servicio ni `.env`; `.gitignore` ya los excluye.
-
-## Compilar y ejecutar
-
-```powershell
-$env:JAVA_HOME = "C:\Program Files\Android\Android Studio\jbr"
-.\gradlew.bat assembleDebug testDebugUnitTest
-```
-
-Instalar en un dispositivo conectado:
-
-```powershell
-adb install -r app\build\outputs\apk\debug\app-debug.apk
-```
-
-## Estructura
-
-```
-app/src/main/kotlin/com/thikeiw/lolinfo/
-├── LoLSkinScopeApp.kt            # Application + @HiltAndroidApp
-├── MainActivity.kt               # Entry point Compose + idioma (attachBaseContext)
-├── Navigation.kt                 # Navigation 3 (NavDisplay)
-├── data/
-│   ├── CatalogRepository.kt      # Sincronización (Data Dragon + CommunityDragon) y flows
-│   ├── auth/                     # AuthRepository (anónima/Google) sobre FirebaseAuth
-│   ├── sync/                     # SkinFlagSyncRepository, merge Lamport, SessionSyncManager
-│   ├── local/                    # Room (lolskin.db), DataStore (versión/esquema/idioma), precios
-│   ├── mappers/                  # Entidades ↔ dominio; tags y rarezas crudas -> recursos
-│   └── remote/                   # Retrofit: DataDragonService, CommunityDragonService
-├── di/                           # Módulos Hilt (red, room, repositorios)
-├── domain/model/                 # Modelos de dominio (Champion, Skin)
-├── ui/
-│   ├── champions/                # Listado + búsqueda + selector de idioma
-│   ├── championdetail/           # Detalle + skins + video
-│   ├── skins/                    # SkinCard compartida, favoritos/poseídas, filtros
-│   ├── account/                  # Cuenta y sincronización (Google, sesión, sync)
-│   ├── skinvideo/                # Overlay de video (WebView oculto -> embed, fullscreen)
-│   └── theme/                    # Tema hextech
-├── util/                         # SpotlightUrls (búsqueda/1305 + fallback)
-└── res/
-    ├── values/                   # Español (MX)
-    └── values-en/                # English (NA)
-```
+- Botón de audio en cada SkinCard y acción de voz base en la cabecera del detalle.
+- VO por skin/base desde [lolsound.com](https://lolsound.com/) (tercero no oficial), en inglés o español latino según idioma de la app.
+- Si una skin no tiene voces propias, se muestra estado vacío; los audios que fallen al reproducir se omiten automáticamente.
+- Reproductor en bottom sheet (MediaPlayer streaming) con play/pausa, anterior/siguiente, seek, secciones y atribución.
 
 ## Fuentes de datos
 
-- [Data Dragon](https://developer.riotgames.com/docs/lol#data-dragon): campeones, lore, skins y
-  assets (locale por idioma: `es_MX` / `en_US`).
-- [CommunityDragon](https://www.communitydragon.org/): metadatos extra (rarity cruda = código `k*`,
-  `isLegacy`, `skinLines`, precios). Nota: el inglés vive en la carpeta `default` (no `en_us`).
-- SkinSpotlights: videos embebidos vía búsqueda del canal (`youtube.com/@SkinSpotlights/search`),
-  con cookies de consentimiento, user-agent desktop y el nombre del skin SIEMPRE en inglés, que
-  es como el canal titula sus videos.
+- [lolsound.com](https://lolsound.com/): voces de campeones/skins (tercero no oficial). Audio © Riot Games.
+
 - La API oficial de Riot **no expone** las skins que posee un jugador: se marcan manualmente
   (Fase 2) y se guardan localmente en Room (`skin_flags`).
 - Cloud Firestore: marcas por usuario en `users/{uid}/skinFlags`, con reglas en `firestore.rules`

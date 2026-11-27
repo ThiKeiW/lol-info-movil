@@ -107,34 +107,48 @@ fun buildSkinEntities(
 ): List<SkinEntity> {
   val championsByKey = champions.associateBy { it.key }
 
-  return cdragonSkins.values
-    .mapNotNull { dto ->
-      val champion = championsByKey[championKeyOf(dto.id)] ?: return@mapNotNull null
-      val num = skinNumOf(dto.id)
-      val isRealSkin = dto.skinClassification == "kChampion"
-      if (!isRealSkin && num != 0) return@mapNotNull null
+  val entities =
+    cdragonSkins.values
+      .mapNotNull { dto ->
+        val champion = championsByKey[championKeyOf(dto.id)] ?: return@mapNotNull null
+        val num = skinNumOf(dto.id)
+        val isRealSkin = dto.skinClassification == "kChampion"
+        if (!isRealSkin && num != 0) return@mapNotNull null
 
-      val displayName =
-        if (num == 0) champion.name else dto.name.ifBlank { "${champion.name} #$num" }
+        val displayName =
+          if (num == 0) champion.name else dto.name.ifBlank { "${champion.name} #$num" }
 
-      SkinEntity(
-        id = dto.id,
-        championId = champion.id,
-        num = num,
-        name = displayName,
-        rarity = rarityLabel(dto.rarity),
-        isLegacy = dto.isLegacy,
-        skinLines =
-          dto.skinLines.orEmpty()
-            .mapNotNull { skinLineNames[it.id] }
-            .filter { it.isNotBlank() }
-            .distinct(),
-        splashUrl = splashUrl(champion.id, num),
-        loadingUrl = loadingUrl(champion.id, num),
-        priceRp = if (num == 0) null else prices[dto.id]?.rp,
-        priceMe = if (num == 0) null else prices[dto.id]?.me,
-      )
+        SkinEntity(
+          id = dto.id,
+          championId = champion.id,
+          num = num,
+          name = displayName,
+          rarity = rarityLabel(dto.rarity),
+          isLegacy = dto.isLegacy,
+          skinLines =
+            dto.skinLines.orEmpty()
+              .mapNotNull { skinLineNames[it.id] }
+              .filter { it.isNotBlank() }
+              .distinct(),
+          splashUrl = splashUrl(champion.id, num),
+          loadingUrl = loadingUrl(champion.id, num),
+          priceRp = if (num == 0) null else prices[dto.id]?.rp,
+          priceMe = if (num == 0) null else prices[dto.id]?.me,
+        )
+      }
+      .distinctBy { it.id }
+      .toMutableList()
+
+  // CDragon skins.json omite Immortalized Legend para Ahri/Kai'Sa; DDragon/lolsound las exponen.
+  listOf(
+    Triple(103085, 103086, "Immortalized Legend Ahri"),
+    Triple(145070, 145071, "Immortalized Legend Kai'Sa"),
+  ).forEach { (risenId, immortalizedId, name) ->
+    val risen = entities.firstOrNull { it.id == risenId } ?: return@forEach
+    if (entities.none { it.id == immortalizedId }) {
+      entities += risen.copy(id = immortalizedId, num = skinNumOf(immortalizedId), name = name, splashUrl = splashUrl(risen.championId, skinNumOf(immortalizedId)), loadingUrl = loadingUrl(risen.championId, skinNumOf(immortalizedId)), priceRp = null, priceMe = null)
     }
-    .distinctBy { it.id }
-    .sortedWith(compareBy({ it.championId }, { it.num }))
+  }
+
+  return entities.sortedWith(compareBy({ it.championId }, { it.num }))
 }

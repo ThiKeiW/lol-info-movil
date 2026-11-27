@@ -1,13 +1,13 @@
-<resources>
+﻿<resources>
     <string name="app_name">LoL SkinScope</string>
 
     <string name="champions_title">Champions</string>
-    <string name="champions_subtitle">Patch %1$s · %2$d champions</string>
+    <string name="champions_subtitle">Patch %1$s Â· %2$d champions</string>
     <string name="champions_not_synced">Catalog not synced</string>
     <string name="champions_search_hint">Search champion</string>
-    <string name="champions_loading">Syncing catalog…</string>
+    <string name="champions_loading">Syncing catalogâ€¦</string>
     <string name="champions_empty">No champions yet. Tap refresh to sync.</string>
-    <string name="champions_no_results">No results for “%1$s”</string>
+    <string name="champions_no_results">No results for â€œ%1$sâ€</string>
 
     <string name="champion_detail_title">Champion</string>
     <string name="champion_not_found">Champion not found</string>
@@ -28,30 +28,80 @@
     <string name="skin_rarity_exalted">Exalted</string>
     <string name="skin_rarity_other">Special</string>
     <string name="language_picker">Language</string>
-    <string name="language_es_mx">Español (MX)</string>
-    <string name="language_es_mx_on">✓ Español (MX)</string>
+    <string name="language_es_mx">EspaÃ±ol (MX)</string>
+    <string name="language_es_mx_on">âœ“ EspaÃ±ol (MX)</string>
     <string name="language_en_na">English (NA)</string>
-    <string name="language_en_na_on">✓ English (NA)</string>
+    <string name="language_en_na_on">âœ“ English (NA)</string>
     <string name="skin_price_rp">%1$d RP</string>
     <string name="skin_price_me">%1$d ME</string>
     <string name="skin_watch_video">Watch video (SkinSpotlights)</string>
+    <string name="skin_audio">Play voice</string>
     <string name="skin_favorite">Mark as favorite</string>
     <string name="skin_unfavorite">Remove from favorites</string>
     <string name="skin_owned">Owned</string>
     <string name="skin_not_owned">Not owned</string>
 
     <string name="favorites_title">Favorite skins</string>
-    <string name="favorites_empty">No favorite skins yet. Mark them with the heart in a champion’s detail.</string>
+    <string name="favorites_empty">No favorite skins yet. Mark them with the heart in a championâ€™s detail.</string>
     <string name="owned_title">Owned</string>
-    <string name="owned_empty">No skins marked as owned yet. Tap “Not owned” in a champion’s detail.</string>
+    <string name="owned_empty">No skins marked as owned yet. Tap â€œNot ownedâ€ in a championâ€™s detail.</string>
     <string name="skins_collection_count">%1$d skins</string>
     <string name="skins_search_hint">Search skin or champion</string>
-    <string name="skins_no_results">No results for “%1$s”</string>
+    <string name="skins_no_results">No results for â€œ%1$sâ€</string>
     <string name="filter_legacy">Legacy</string>
     <string name="filter_clear">Clear filters</string>
     <string name="skin_video_channel">Video by SkinSpotlights on YouTube</string>
     <string name="skin_video_open_youtube">Open in YouTube</string>
     <string name="skin_video_not_found">No video found for this skin. Check your connection and try again.</string>
+
+    <string name="audio_champion_voice">Champion voice</string>
+    <string name="audio_base_voice">Base voice</string>
+    <string name="audio_sheet_title">Audio for %1$s</string>
+    <string name="audio_section_all">All</string>
+    <string name="audio_section_champion_select">Champion Select</string>
+    <string name="audio_section_ban">Ban</string>
+    <string name="audio_section_movement">Movement</string>
+    <string name="audio_section_first_move">First Move</string>
+    <string name="audio_section_moving">Moving</string>
+    <string name="audio_section_long_move">Long Move</string>
+    <string name="audio_section_idle">Idle</string>
+    <string name="audio_section_first_encounter">First Encounter</string>
+    <string name="audio_section_taunt">Taunt</string>
+    <string name="audio_section_joke">Joke</string>
+    <string name="audio_section_laugh">Laugh</string>
+    <string name="audio_section_dance">Dance</string>
+    <string name="audio_section_attack">Attack</string>
+    <string name="audio_section_basic_attacking">Basic Attacking</string>
+    <string name="audio_section_attacking">Attacking</string>
+    <string name="audio_section_ability_casting">Ability Casting</string>
+    <string name="audio_section_kills_objectives">Kills and Objectives</string>
+    <string name="audio_section_other_gameplay">Other Gameplay</string>
+    <string name="audio_section_death">Death</string>
+    <string name="audio_section_game_start">Game Start</string>
+    <string name="audio_section_game_end">Game End</string>
+    <string name="audio_section_recall">Recall</string>
+    <string name="audio_section_low_health">Low Health</string>
+    <string name="audio_section_shopping">Shopping</string>
+    <string name="audio_section_pinging">Pinging</string>
+    <string name="audio_section_general">General</string>
+    <string name="audio_form_original">Original</string>
+    <string name="audio_form_old">Old variant</string>
+    <string name="audio_form_chosen">Chosen</string>
+    <string name="audio_form_risen_legend">Risen Legend</string>
+    <string name="audio_form_indie">Indie</string>
+    <string name="audio_form_rising_star">Rising Star</string>
+    <string name="audio_form_superstar">Superstar</string>
+    <string name="audio_loading">Loading audioâ€¦</string>
+    <string name="audio_error">Could not load audio. Check your connection and try again.</string>
+    <string name="audio_empty">No audio available for this champion.</string>
+    <string name="audio_skin_fallback_note">No unique voice lines for this skin.</string>
+    <string name="audio_no_transcript">No transcript</string>
+    <string name="audio_localized_badge">Localized</string>
+    <string name="audio_play">Play</string>
+    <string name="audio_pause">Pause</string>
+    <string name="audio_previous">Previous</string>
+    <string name="audio_next">Next</string>
+    <string name="audio_attribution">Voices: lolsound.com (third-party, unofficial). Audio © Riot Games.</string>
 
     <string name="account_title">Account &amp; sync</string>
     <string name="account_action_open">Account &amp; sync</string>
@@ -66,7 +116,7 @@
     <string name="account_continue_guest">Continue as guest</string>
     <string name="account_sync_now">Sync now</string>
     <string name="account_sync_idle">Not synced</string>
-    <string name="account_sync_syncing">Syncing…</string>
+    <string name="account_sync_syncing">Syncingâ€¦</string>
     <string name="account_sync_success">Last sync: %1$s</string>
     <string name="account_sync_error">Sync error: %1$s</string>
     <string name="account_google_not_configured">Google Web Client ID is not configured (google.webClientId in gradle.properties).</string>
@@ -81,3 +131,4 @@
     <string name="action_close">Close</string>
     <string name="action_clear_search">Clear search</string>
 </resources>
+

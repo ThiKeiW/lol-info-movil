@@ -3,6 +3,7 @@ package com.thikeiw.lolinfo.di
 import com.thikeiw.lolinfo.BuildConfig
 import com.thikeiw.lolinfo.data.remote.CommunityDragonService
 import com.thikeiw.lolinfo.data.remote.DataDragonService
+import com.thikeiw.lolinfo.data.remote.LolSoundAudioService
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -70,4 +71,14 @@ object NetworkModule {
       .addConverterFactory(json.asConverterFactory("application/json".toMediaType()))
       .build()
       .create(CommunityDragonService::class.java)
+
+  @Provides
+  @Singleton
+  fun provideLolSoundAudioService(client: OkHttpClient, json: Json): LolSoundAudioService =
+    Retrofit.Builder()
+      .baseUrl(BuildConfig.LOLSOUND_URL)
+      .client(client)
+      .addConverterFactory(json.asConverterFactory("application/json".toMediaType()))
+      .build()
+      .create(LolSoundAudioService::class.java)
 }

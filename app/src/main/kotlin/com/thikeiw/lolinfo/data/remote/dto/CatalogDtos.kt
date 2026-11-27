@@ -31,12 +31,13 @@ data class ChampionDetailResponse(val data: Map<String, ChampionDetailDto> = emp
 @Serializable
 data class ChampionDetailDto(
   val id: String,
+  val name: String = "",
   val lore: String = "",
   val skins: List<ChampionSkinDto> = emptyList(),
 )
 
 @Serializable
-data class ChampionSkinDto(val num: Int, val name: String)
+data class ChampionSkinDto(val num: Int, val name: String, val parentSkin: String? = null)
 
 @Serializable
 data class CdragonSkinDto(
